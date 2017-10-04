@@ -1,0 +1,19 @@
+:root {
+    --default-font: 'Roboto', sans-serif;
+    --base-font-size: 16px;
+    --default-background: #efefef;
+    --default-color: #111;
+    --error-color: red;
+}
+
+body {
+    font-family: var(--default-font);
+    font-size: var(--base-font-size);
+    line-height: calc(var(--base-font-size) * 1.8);
+    background: var(--default-background);
+    color: var(--default-color);
+}
+
+.error {
+    color: var(--error-color);
+}
