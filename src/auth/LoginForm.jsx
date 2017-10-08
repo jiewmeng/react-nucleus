@@ -1,7 +1,11 @@
 import React from 'react'
+import PropTypes from 'prop-types'
+import {connect} from 'react-redux'
 import validator from 'validator'
 
-export default class LoginForm extends React.Component {
+import {loginRequest} from './index'
+
+export class LoginForm extends React.Component {
   constructor(params) {
     super(params)
 
@@ -53,10 +57,32 @@ export default class LoginForm extends React.Component {
     }
   }
 
+  handleSubmit(event) {
+    this.props.loginRequest({
+      username: this.state.username,
+      password: this.state.password
+    })
+    event.preventDefault()
+  }
+
   render() {
+    const loginError = this.props.loginError
+    const generalError = loginError ?
+      <div className="error">{loginError.body.error}</div> :
+      ''
+
+    const isLoginDisabled = Boolean(
+      this.props.isLoggingIn ||
+      this.state.usernameError ||
+      this.state.passwordError
+    )
+
     return (
-      <form>
+      <form onSubmit={this.handleSubmit.bind(this)}>
         <h2>An Example Login Form</h2>
+
+        {generalError}
+
         <div>
           <label htmlFor="username">Username</label>
           <input
@@ -82,8 +108,38 @@ export default class LoginForm extends React.Component {
           }
         </div>
 
-        <input type="submit" value="Login" />
+        <input
+          type="submit"
+          value="Login"
+          disabled={isLoginDisabled}
+        />
       </form>
     )
   }
 }
+
+LoginForm.propTypes = {
+  isLoggingIn: PropTypes.bool,
+  loginRequest: PropTypes.func.isRequired,
+  loginError: PropTypes.object
+}
+
+LoginForm.defaultProps = {
+  isLoggingIn: false,
+  loginError: null
+}
+
+const mapStateToProps = function (state) {
+  return {
+    isLoggingIn: state.auth.isLoggingIn,
+    loginError: state.auth.loginError
+  }
+}
+
+const mapDispatchToProps = function (dispatch) {
+  return {
+    loginRequest: (params) => dispatch(loginRequest(params))
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(LoginForm)

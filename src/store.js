@@ -5,6 +5,7 @@ import { routerMiddleware } from 'react-router-redux'
 import createSagaMiddleware from 'redux-saga'
 
 import appReducer from './reducer'
+import appSaga from './sagas'
 
 export const history = createHistory()
 
@@ -20,3 +21,5 @@ export default createStore(
     )
   )
 )
+
+sagaMiddleware.run(appSaga)
