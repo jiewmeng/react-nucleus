@@ -1,8 +1,5 @@
-import { call, put, takeLatest, all } from 'redux-saga/effects'
-import {
-  login,
-  logout
-} from './api'
+import { ajax } from 'rxjs/observable/dom/ajax'
+import { Observable } from 'rxjs'
 
 const LOGIN_REQUEST = 'app/auth/LOGIN_REQUEST'
 const LOGIN_SUCCESS = 'app/auth/LOGIN_SUCCESS'
@@ -11,62 +8,52 @@ const LOGOUT_REQUEST = 'app/auth/LOGOUT_REQUEST'
 const LOGOUT_SUCCESS = 'app/auth/LOGOUT_SUCCESS'
 const LOGOUT_ERROR = 'app/auth/LOGOUT_ERROR'
 
-export function loginRequest(payload) {
-  return {
-    type: LOGIN_REQUEST,
-    payload
-  }
-}
+export const loginRequest = (payload) => ({ type: LOGIN_REQUEST, payload })
+export const loginSuccess = (payload) => ({ type: LOGIN_SUCCESS, payload })
+export const loginError = (payload) => ({ type: LOGIN_ERROR, payload })
 
-export function* doLogin(action) {
-  try {
-    const payload = yield call(login, action.payload)
+const loginEpic = action$ =>
+  action$.ofType(LOGIN_REQUEST)
+    .mergeMap(action =>
+      ajax({
+        url: `${API_URL}/auth/session`,
+        body: action.payload,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+        .map(response => loginSuccess(response))
+        .catch(error => Observable.of(loginError(error)))
+    )
 
-    const {token, expiresIn} = payload.data
-    localStorage.setItem('token', token)
-    localStorage.setItem('tokenExpiry', Date.now() + expiresIn)
-    yield put({type: LOGIN_SUCCESS, payload: {token, expiresIn}})
-  } catch (error) {
-    yield put({type: LOGIN_ERROR, error})
-  }
-}
+export const logoutRequest = (payload) => ({ type: LOGOUT_REQUEST, payload })
+export const logoutSuccess = (payload) => ({ type: LOGOUT_SUCCESS, payload })
+export const logoutError = (payload) => ({ type: LOGOUT_ERROR, payload })
 
-export function logoutRequest(payload) {
-  return {
-    type: LOGOUT_REQUEST,
-    payload
-  }
-}
+const logoutEpic = action$ =>
+  action$.ofType(LOGOUT_REQUEST)
+    .mergeMap(action =>
+      ajax({
+        url: `${API_URL}/auth/session`,
+        headers: {
+          Authorization: `Bearer ${action.payload.token}`
+        },
+        method: 'DELETE'
+      })
+        .map(response => logoutSuccess(response))
+        .catch(error => Observable.of(logoutError(error)))
+    )
 
-
-export function* doLogout(action) {
-  try {
-    yield call(logout, action.payload)
-
-    localStorage.clear()
-    yield put({type: LOGOUT_SUCCESS})
-  } catch (error) {
-    yield put({type: LOGOUT_ERROR, error})
-  }
-}
-
-export function* watchLoginRequest() {
-  yield takeLatest(LOGIN_REQUEST, doLogin)
-}
-
-export function* watchLogoutRequest() {
-  yield takeLatest(LOGOUT_REQUEST, doLogout)
-}
-
-export function* authSagas() {
-  yield all([
-    watchLoginRequest(),
-    watchLogoutRequest()
-  ])
-}
+export const authEpics = [
+  loginEpic,
+  logoutEpic
+]
 
 export default function reducer(
-  state = {},
+  state = {
+    isLoggingIn: false
+  },
   action = {
     type: '',
     payload: {},
@@ -84,16 +71,16 @@ export default function reducer(
       return {
         ...state,
         isLoggingIn: false,
-        token: action.payload.token,
-        tokenExpiry: Date.now() + action.payload.expiresIn,
+        token: action.payload.response.token,
+        tokenExpiry: Date.now() + action.payload.response.expiresIn,
       }
     case LOGIN_ERROR:
       return {
         ...state,
         isLoggingIn: false,
         loginError: {
-          status: action.error.response.status,
-          body: action.error.response.data
+          status: action.payload.xhr.status,
+          body: action.payload.xhr.response
         }
       }
     case LOGOUT_REQUEST:
@@ -114,8 +101,8 @@ export default function reducer(
         ...state,
         isLoggingOut: false,
         logoutError: {
-          status: action.error.response.status,
-          body: action.error.response.data
+          status: action.payload.xhr.status,
+          body: action.payload.xhr.data
         }
       }
     default:
