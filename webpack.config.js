@@ -31,6 +31,22 @@ module.exports = {
       {
         test: /\.css$/,
         loaders: ['style-loader', 'css-loader', 'postcss-loader']
+      },
+      {
+        test: /\.s(c|a)ss$/,
+        loaders: [
+          'style-loader',
+          'css-loader',
+          {
+            loader: 'sass-loader',
+            options: {
+              includePaths: [
+                './node_modules',
+                './node_modules/grommet/node_modules'
+              ]
+            }
+          }
+        ]
       }
     ]
   },

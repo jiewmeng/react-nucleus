@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 import {
   AppContainer
 } from 'react-hot-loader'
+import 'grommet/grommet.min.css'
 
 import App from './App'
 import './app.css'

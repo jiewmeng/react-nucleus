@@ -1,14 +1,17 @@
 import React from 'react'
 import {connect} from 'react-redux'
 import PropTypes from 'prop-types'
+import Box from 'grommet/components/Box'
+import Button from 'grommet/components/Button'
+
 import {logoutRequest} from '../auth'
 
 export function UserSection({logout}) {
   return (
-    <div>
+    <Box pad="medium" full="horizontal">
       <p>You are already logged in</p>
-      <button onClick={logout}>Log Out</button>
-    </div>
+      <Button label="Log out" onClick={logout} />
+    </Box>
   )
 }
 
@@ -28,8 +31,7 @@ const mapDispatchToProps = function (dispatch) {
   }
 }
 
-const mergeProps = function (stateProps, dispatchProps, ownProps) {
-  console.log(stateProps, dispatchProps, ownProps)
+const mergeProps = function (stateProps, dispatchProps) {
   return Object.assign({}, stateProps, dispatchProps, {
     logout: () => dispatchProps.logout(stateProps.token)
   })

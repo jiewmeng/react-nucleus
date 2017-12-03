@@ -6,6 +6,11 @@
     --error-color: red;
 }
 
+html, body, #app {
+  height: 100%;
+  min-height: 100%;
+}
+
 body {
     font-family: var(--default-font);
     font-size: var(--base-font-size);
