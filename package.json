@@ -23,6 +23,7 @@
     "eslint-plugin-react": "^7.4.0",
     "extract-text-webpack-plugin": "^3.0.0",
     "html-webpack-plugin": "^2.30.1",
+    "node-sass": "^4.7.2",
     "postcss": "^6.0.11",
     "postcss-cssnext": "^3.0.2",
     "postcss-each": "^0.10.0",
@@ -30,6 +31,7 @@
     "postcss-loader": "^2.0.6",
     "postcss-mixins": "^6.1.0",
     "react-dev-server": "^0.6.2",
+    "sass-loader": "^6.0.6",
     "style-loader": "^0.18.2",
     "webpack": "^3.5.6",
     "webpack-dev-server": "^2.7.1"
@@ -37,6 +39,7 @@
   "dependencies": {
     "axios": "^0.16.2",
     "bluebird": "^3.5.0",
+    "grommet": "^1.9.0",
     "history": "^4.7.2",
     "lodash": "^4.17.4",
     "prop-types": "^15.6.0",
@@ -51,6 +54,7 @@
     "redux-devtools-extension": "^2.13.2",
     "redux-observable": "^0.17.0",
     "rxjs": "^5.5.3",
+    "styled-components": "^2.2.4",
     "validator": "^8.2.0"
   }
 }

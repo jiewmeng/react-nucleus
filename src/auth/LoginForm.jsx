@@ -2,6 +2,9 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import {connect} from 'react-redux'
 import validator from 'validator'
+import { Link } from 'react-router-dom'
+import GrommetLoginForm from 'grommet/components/LoginForm'
+import Box from 'grommet/components/Box'
 
 import {loginRequest} from './index'
 
@@ -10,129 +13,71 @@ export class LoginForm extends React.Component {
     super(params)
 
     this.state = {
-      username: '',
-      password: '',
-      usernameError: '',
-      passwordError: ''
+      errors: []
     }
+
+    this.validateForm = this.validateForm.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
   }
 
-  handleChange(field, event) {
-    const value = event.target.value
+  validateForm(params) {
+    const errors = []
 
-    // some simple validation
-    this.validateField(field, value)
+    if (validator.isEmpty(params.username)) {
+      errors.push('Username is required')
+    }
+
+    if (validator.isEmpty(params.password)) {
+      errors.push('Password is required')
+    }
 
     this.setState({
-      [field]: value
+      errors
     })
   }
 
-  validateField(field, value) {
-    switch (field) {
-      case 'username':
-        if (validator.isEmpty(value)) {
-          this.setState({
-            usernameError: 'Username is required'
-          })
-        } else {
-          this.setState({
-            usernameError: undefined
-          })
-        }
-        break
-      case 'password':
-        if (validator.isEmpty(value)) {
-          this.setState({
-            passwordError: 'Password is required'
-          })
-        } else {
-          this.setState({
-            passwordError: undefined
-          })
-        }
-        break
-      default:
-        // noop
+  handleSubmit(params) {
+    this.validateForm(params)
+    if (Object.keys(this.state.errors).length === 0) {
+      this.props.loginRequest({
+        username: params.username,
+        password: params.password
+      })
     }
-  }
-
-  handleSubmit(event) {
-    this.props.loginRequest({
-      username: this.state.username,
-      password: this.state.password
-    })
     event.preventDefault()
   }
 
   render() {
-    const loginError = this.props.loginError
-    const generalError = loginError ?
-      <div className="error">{loginError.body.error}</div> :
-      ''
-
-    const isLoginDisabled = Boolean(
-      this.props.isLoggingIn ||
-      this.state.usernameError ||
-      this.state.passwordError
-    )
-
     return (
-      <form onSubmit={this.handleSubmit.bind(this)}>
-        <h2>An Example Login Form</h2>
-
-        {generalError}
-
-        <div>
-          <label htmlFor="username">Username</label>
-          <input
-            type="text"
-            value={this.state.username}
-            onChange={this.handleChange.bind(this, 'username')}
-          />
-
-          {this.state.usernameError &&
-            <span className="error">{this.state.usernameError}</span>
-          }
-        </div>
-        <div>
-          <label htmlFor="password">Password</label>
-          <input
-            type="password"
-            value={this.state.password}
-            onChange={this.handleChange.bind(this, 'password')}
-          />
-
-          {this.state.passwordError &&
-            <span className="error">{this.state.passwordError}</span>
-          }
-        </div>
-
-        <input
-          type="submit"
-          value="Login"
-          disabled={isLoginDisabled}
-        />
-      </form>
+      <Box appCentered align="center">
+        <GrommetLoginForm
+          title="Login"
+          secondaryText="React Nucleus"
+          forgotPassword={<Link to="/auth/forgot-password">Forgot Password</Link>}
+          onSubmit={this.props.isLoggingIn ? undefined : this.handleSubmit}
+          errors={this.state.errors.concat(this.props.loginError)} />
+      </Box>
     )
   }
 }
 
 LoginForm.propTypes = {
-  isLoggingIn: PropTypes.bool,
+  isLoggingIn: PropTypes.bool.isRequired,
   loginRequest: PropTypes.func.isRequired,
-  loginError: PropTypes.object
-}
-
-LoginForm.defaultProps = {
-  isLoggingIn: false,
-  loginError: null
+  loginError: PropTypes.array.isRequired
 }
 
 const mapStateToProps = function (state) {
+  let loginError
+  if (state.auth.loginError) {
+    loginError = [state.auth.loginError.body.error]
+    if (state.auth.loginError.body.details) {
+      loginError = Object.values(state.auth.loginError.body.details)
+    }
+  }
   return {
     isLoggingIn: state.auth.isLoggingIn,
-    loginError: state.auth.loginError
+    loginError
   }
 }
 
