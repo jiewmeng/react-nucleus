@@ -68,7 +68,7 @@ LoginForm.propTypes = {
 }
 
 const mapStateToProps = function (state) {
-  let loginError
+  let loginError = ''
   if (state.auth.loginError) {
     loginError = [state.auth.loginError.body.error]
     if (state.auth.loginError.body.details) {
